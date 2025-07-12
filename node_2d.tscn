@@ -1,21 +1,48 @@
-[gd_scene load_steps=4 format=3 uid="uid://cme5q7g0n4u86"]
+[gd_scene load_steps=6 format=3 uid="uid://cme5q7g0n4u86"]
 
 [ext_resource type="Texture2D" uid="uid://cyyirr2hac04f" path="res://assets/background/space.png" id="1_epypp"]
+[ext_resource type="Script" uid="uid://bds15cn4snnou" path="res://main.gd" id="1_q6r6c"]
 [ext_resource type="Script" uid="uid://h8lgyfrh6vvi" path="res://scripts/ship.gd" id="2_0hol4"]
-[ext_resource type="Texture2D" uid="uid://ckr58s6vhg72" path="res://assets/ships/ship_placeholder.png" id="3_q6r6c"]
+[ext_resource type="Texture2D" uid="uid://dli7i584rmhwy" path="res://assets/ships/ship_base.png" id="3_0hol4"]
+[ext_resource type="Texture2D" uid="uid://cbhlpnmbh2dg3" path="res://assets/ships/ship_thrust.png" id="4_q6r6c"]
 
-[node name="Node2D" type="Node2D"]
+[node name="Main" type="Node2D"]
+script = ExtResource("1_q6r6c")
 
-[node name="Main" type="Node2D" parent="."]
+[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
 
-[node name="Sprite2D" type="Sprite2D" parent="Main"]
+[node name="ParallaxLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_scale = Vector2(0.01, 0.01)
+
+[node name="Background" type="Sprite2D" parent="ParallaxBackground/ParallaxLayer"]
 texture = ExtResource("1_epypp")
 
 [node name="Ship" type="Node2D" parent="."]
 script = ExtResource("2_0hol4")
 
-[node name="Sprite2D" type="Sprite2D" parent="Ship"]
-rotation = 1.5708
-texture = ExtResource("3_q6r6c")
+[node name="Camera2D" type="Camera2D" parent="Ship"]
 
-[node name="Camera" type="Camera2D" parent="Ship"]
+[node name="SpriteBase" type="Sprite2D" parent="Ship"]
+rotation = 1.5708
+texture = ExtResource("3_0hol4")
+
+[node name="SpriteThrust" type="Sprite2D" parent="Ship"]
+visible = false
+rotation = 1.5708
+texture = ExtResource("4_q6r6c")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="SpeedLabel" type="Label" parent="CanvasLayer"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -39.5
+offset_top = -63.0
+offset_right = 39.5
+offset_bottom = -40.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "Speed: 0/s"

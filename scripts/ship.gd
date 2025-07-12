@@ -1,32 +1,58 @@
 extends Node2D
 
-# rýchlosť pohybu
-var speed := 200.0
+# odkazy na sprity
+@onready var sprite_base = $SpriteBase
+@onready var sprite_thrust = $SpriteThrust
 
-# rýchlosť otáčania (ako rýchlo sa natočí smerom k cieľu)
-var rotation_speed := 8.0
+# fyzika
+var velocity := Vector2.ZERO
+var acceleration := 400.0
+var rotation_speed := 4.0
+var desired_direction := Vector2.ZERO
+var rotate_threshold := 0.1  # v radiánoch – menšie číslo = presnejšia otočka
+
+
+### Ovládanie lode
+# Spracúva vstupy z klávesnice (WASD) a určuje smer akcelerácie
 
 func _process(delta):
-	# výpočet smeru pohybu
-	var movement := Vector2.ZERO
+	var input_x = 0
+	var input_y = 0
 
-	if Input.is_action_pressed("move_up"):
-		movement.y -= 1
-	if Input.is_action_pressed("move_down"):
-		movement.y += 1
 	if Input.is_action_pressed("move_left"):
-		movement.x -= 1
+		input_x -= 1
 	if Input.is_action_pressed("move_right"):
-		movement.x += 1
+		input_x += 1
+	if Input.is_action_pressed("move_up"):
+		input_y -= 1
+	if Input.is_action_pressed("move_down"):
+		input_y += 1
 
-	if movement.length() > 0:
-		movement = movement.normalized()
+	var input_dir = Vector2(input_x, input_y)
 
-		# vypočítaj cieľový uhol smeru
-		var target_angle = movement.angle()
+	if input_dir != Vector2.ZERO:
+		input_dir = input_dir.normalized()
+		desired_direction = input_dir
 
-		# postupne natoč loď smerom k cieľu
+		# Zisti uhol do ktorého sa má otočiť
+		var target_angle = desired_direction.angle()
 		rotation = lerp_angle(rotation, target_angle, rotation_speed * delta)
 
-		# aplikuj pohyb podľa aktuálneho smeru
-		position += movement * speed * delta
+		# Spoľahlivý rozdiel uhlov s wrapf
+		var angle_diff = abs(wrapf(rotation - target_angle, -PI, PI))
+
+		# Debug pre testovanie uhla – môžeš zmazať neskôr
+		# print("Angle diff: ", angle_diff)
+
+		if angle_diff < rotate_threshold:
+			velocity += desired_direction * acceleration * delta
+			sprite_base.visible = false
+			sprite_thrust.visible = true
+		else:
+			sprite_base.visible = true
+			sprite_thrust.visible = false
+	else:
+		sprite_base.visible = true
+		sprite_thrust.visible = false
+
+	position += velocity * delta
