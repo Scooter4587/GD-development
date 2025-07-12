@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3 uid="uid://cme5q7g0n4u86"]
+
+[ext_resource type="Texture2D" uid="uid://cyyirr2hac04f" path="res://assets/background/space.png" id="1_epypp"]
+[ext_resource type="Script" uid="uid://h8lgyfrh6vvi" path="res://scripts/ship.gd" id="2_0hol4"]
+[ext_resource type="Texture2D" uid="uid://ckr58s6vhg72" path="res://assets/ships/ship_placeholder.png" id="3_q6r6c"]
+
+[node name="Node2D" type="Node2D"]
+
+[node name="Main" type="Node2D" parent="."]
+
+[node name="Sprite2D" type="Sprite2D" parent="Main"]
+texture = ExtResource("1_epypp")
+
+[node name="Ship" type="Node2D" parent="."]
+script = ExtResource("2_0hol4")
+
+[node name="Sprite2D" type="Sprite2D" parent="Ship"]
+rotation = 1.5708
+texture = ExtResource("3_q6r6c")
+
+[node name="Camera" type="Camera2D" parent="Ship"]
