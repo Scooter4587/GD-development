@@ -62,15 +62,16 @@ func _physics_process(delta):
 
 func check_drill_collision():
 	var areas = $DrillDetector.get_overlapping_areas()
-
 	for area in areas:
-		var asteroid = area.get_parent()
-		if asteroid.is_in_group("asteroid"):
-			if asteroid.is_mined:
-				continue  # preskoč ak už je navŕtaný
-
+		var asteroid_node = area.get_parent()
+		if asteroid_node.name.begins_with("Asteroid"):
 			var speed = velocity.length()
 			if drill_active and speed <= drill_speed_limit:
-				asteroid.drill()
-			else:
-				velocity = Vector2.ZERO
+				# Získame TileMapLayer s názvom "Asteroid"
+				var tilemap_layer = asteroid_node.get_node("Asteroid")
+
+				# Prepočítame pozíciu detektora na tile súradnice
+				var tile_pos = tilemap_layer.local_to_map($DrillDetector.global_position)
+
+				# Vymažeme tile v danej pozícii
+				tilemap_layer.set_cell(0, tile_pos, -1)  # 0 = layer index, -1 = prázdny tile
