@@ -1,19 +1,14 @@
-extends Node2D
+extends CharacterBody2D  # 🔁 opravene z Node2D
 
-# odkazy na sprity
 @onready var sprite_base = $SpriteBase
 @onready var sprite_thrust = $SpriteThrust
+@export var drill_speed_limit := 50.0
 
-# fyzika
-var velocity := Vector2.ZERO
 var acceleration := 400.0
 var rotation_speed := 4.0
 var desired_direction := Vector2.ZERO
-var rotate_threshold := 0.1  # v radiánoch – menšie číslo = presnejšia otočka
-
-
-### Ovládanie lode
-# Spracúva vstupy z klávesnice (WASD) a určuje smer akcelerácie
+var rotate_threshold := 0.1
+var drill_active := false
 
 func _process(delta):
 	var input_x = 0
@@ -34,15 +29,10 @@ func _process(delta):
 		input_dir = input_dir.normalized()
 		desired_direction = input_dir
 
-		# Zisti uhol do ktorého sa má otočiť
 		var target_angle = desired_direction.angle()
 		rotation = lerp_angle(rotation, target_angle, rotation_speed * delta)
 
-		# Spoľahlivý rozdiel uhlov s wrapf
 		var angle_diff = abs(wrapf(rotation - target_angle, -PI, PI))
-
-		# Debug pre testovanie uhla – môžeš zmazať neskôr
-		# print("Angle diff: ", angle_diff)
 
 		if angle_diff < rotate_threshold:
 			velocity += desired_direction * acceleration * delta
@@ -55,4 +45,19 @@ func _process(delta):
 		sprite_base.visible = true
 		sprite_thrust.visible = false
 
-	position += velocity * delta
+	drill_active = Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
+
+	position += velocity * delta  # zatiaľ OK, ale neskôr move_and_slide
+
+func _physics_process(delta):
+	check_drill_collision()
+
+func check_drill_collision():
+	for area in $DrillDetector.get_overlapping_areas():
+		var asteroid = area.get_parent()
+		if asteroid.is_in_group("asteroid"):
+			var speed = velocity.length()
+			if drill_active and speed <= drill_speed_limit:
+				asteroid.drill()
+			else:
+				print("💥 Crash! Too fast or drill not active.")
