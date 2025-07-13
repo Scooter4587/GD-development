@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://du35ocvqtnow"]
+[gd_scene load_steps=9 format=3 uid="uid://du35ocvqtnow"]
 
 [ext_resource type="Script" uid="uid://bds15cn4snnou" path="res://main.gd" id="1_o6xl0"]
 [ext_resource type="Texture2D" uid="uid://cyyirr2hac04f" path="res://assets/background/space.png" id="2_tipki"]
@@ -6,7 +6,6 @@
 [ext_resource type="Texture2D" uid="uid://dli7i584rmhwy" path="res://assets/ships/ship_base.png" id="4_choun"]
 [ext_resource type="Texture2D" uid="uid://cbhlpnmbh2dg3" path="res://assets/ships/ship_thrust.png" id="5_ya4ey"]
 [ext_resource type="PackedScene" uid="uid://degs3x0jh26yq" path="res://scenes/asteroid1.tscn" id="6_eb6dy"]
-[ext_resource type="Script" uid="uid://dlqewixg248lh" path="res://scripts/asteroid_1.gd" id="7_trceg"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_7mycd"]
 radius = 28.0
@@ -29,11 +28,11 @@ z_index = -10
 texture = ExtResource("2_tipki")
 
 [node name="Ship" type="CharacterBody2D" parent="."]
-collision_mask = 2
+collision_layer = 3
+collision_mask = 3
 script = ExtResource("3_85g3d")
 
 [node name="ShipBody" type="CollisionShape2D" parent="Ship"]
-visible = false
 position = Vector2(10, 1)
 rotation = 1.5708
 shape = SubResource("CapsuleShape2D_7mycd")
@@ -50,6 +49,7 @@ rotation = 1.5708
 texture = ExtResource("5_ya4ey")
 
 [node name="DrillDetector" type="Area2D" parent="Ship"]
+collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Ship/DrillDetector"]
 position = Vector2(50, 0)
@@ -74,4 +74,3 @@ text = "Speed: 0/s"
 
 [node name="Asteroid1" parent="." instance=ExtResource("6_eb6dy")]
 position = Vector2(531, 0)
-script = ExtResource("7_trceg")

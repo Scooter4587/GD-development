@@ -59,19 +59,27 @@ func _physics_process(delta):
 	move_and_slide()
 	check_drill_collision()
 
+	# 🚧 DEBUG: Detekcia kolízie s asteroidom
+	var test_collision = move_and_collide(velocity * delta)
+	if test_collision:
+		var collider = test_collision.get_collider()
+		if collider.name.begins_with("Asteroid"):
+			print("🚨 Kontakt s asteroid tile:", collider.name)
+		else:
+			print("💥 Kolízia s:", collider.name)
 
 func check_drill_collision():
 	var areas = $DrillDetector.get_overlapping_areas()
 	for area in areas:
 		var asteroid_node = area.get_parent()
+		
+		# Debug výpis: názov oblasti, jej rodiča a vlastníka scény
+		print("🚨 Kontakt s:", area.name, "| Parent:", asteroid_node.name, "| Owner:", area.get_owner().name)
+
 		if asteroid_node.name.begins_with("Asteroid"):
 			var speed = velocity.length()
 			if drill_active and speed <= drill_speed_limit:
-				# Získame TileMapLayer s názvom "Asteroid"
-				var tilemap_layer = asteroid_node.get_node("Asteroid")
-
-				# Prepočítame pozíciu detektora na tile súradnice
-				var tile_pos = tilemap_layer.local_to_map($DrillDetector.global_position)
-
-				# Vymažeme tile v danej pozícii
-				tilemap_layer.set_cell(0, tile_pos, -1)  # 0 = layer index, -1 = prázdny tile
+				print("⛏️ Pokus o vrtanie do:", asteroid_node.name)
+				
+				# Skúsme zavolať vrtanie priamo na asteroid node
+				asteroid_node.drill_at_tile($DrillDetector.global_position)
