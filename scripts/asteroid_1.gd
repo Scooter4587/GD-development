@@ -1,15 +1,17 @@
-extends Node2D
+extends StaticBody2D
 
 var is_mined := false
 
+@onready var sprite_surface = $asteroid1
+@onready var sprite_mined = $asteroid1_mine
+@onready var collider = $CollisionPolygon2D  # alebo napr. $CollisionPolygon2D, podľa tvojho stromu
+
 func drill():
 	if not is_mined:
-		$asteroid1.visible = false
-		$asteroid1_mine.visible = true
 		is_mined = true
-		print("✅ Asteroid mined!")
+		sprite_surface.visible = false
+		sprite_mined.visible = true
+		collider.set_deferred("disabled", true)
+		print("⛏️ Asteroid drilled!")
 	else:
 		print("🪨 Already mined!")
-
-func destroy():
-	queue_free()

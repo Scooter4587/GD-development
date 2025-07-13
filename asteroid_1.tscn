@@ -7,12 +7,10 @@
 [sub_resource type="CircleShape2D" id="CircleShape2D_wrdws"]
 radius = 402.12
 
-[node name="Asteroid1" type="Node2D"]
+[node name="Asteroid1" type="StaticBody2D" groups=["Asteroids"]]
 script = ExtResource("1_wrdws")
 
-[node name="StaticBody2D" type="StaticBody2D" parent="."]
-
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="StaticBody2D"]
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
 position = Vector2(0, -1)
 polygon = PackedVector2Array(246, 297, 286, 266, 293, 231, 327, 200, 362, 138, 360, 63, 393, -4, 403, -53, 329, -211, 292, -252, 224, -275, 171, -346, 94, -378, -1, -397, -79, -382, -101, -352, -179, -341, -210, -306, -251, -296, -283, -264, -292, -208, -343, -156, -379, -89, -378, -49, -403, 21, -367, 169, -316, 202, -275, 298, -246, 317, -210, 321, -154, 357, -110, 390, -51, 391, -21, 411, 28, 407, 83, 382, 116, 345, 189, 323, 227, 317)
 

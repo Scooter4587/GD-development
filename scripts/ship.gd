@@ -9,6 +9,8 @@ var rotation_speed := 4.0
 var desired_direction := Vector2.ZERO
 var rotate_threshold := 0.1
 var drill_active := false
+var last_drill_state = false
+var last_asteroid_drilled = null
 
 func _process(delta):
 	var input_x = 0
@@ -45,8 +47,12 @@ func _process(delta):
 		sprite_base.visible = true
 		sprite_thrust.visible = false
 
-	# Drill vstup – ľavé tlačidlo (môžeš zmeniť na pravé ak chceš)
-	drill_active = Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
+	# Drill vstup – len pri zmene stavu
+	var current_drill = Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
+	if current_drill != last_drill_state:
+		print("🔦 Drill active:", current_drill)
+		last_drill_state = current_drill
+	drill_active = current_drill
 
 
 func _physics_process(delta):
@@ -56,19 +62,15 @@ func _physics_process(delta):
 
 func check_drill_collision():
 	var areas = $DrillDetector.get_overlapping_areas()
-	print("🔍 Overlapping areas count:", areas.size())
 
 	for area in areas:
-		print(" - Area name:", area.name, " | type:", area.get_class())
 		var asteroid = area.get_parent()
 		if asteroid.is_in_group("asteroid"):
-			print("✅ Asteroid detected: ", asteroid.name)
-			var speed = velocity.length()
-			print("Speed:", speed, "Drill active:", drill_active)
+			if asteroid.is_mined:
+				continue  # preskoč ak už je navŕtaný
 
+			var speed = velocity.length()
 			if drill_active and speed <= drill_speed_limit:
-				print("⛏️ Drill conditions met!")
 				asteroid.drill()
 			else:
-				print("💥 Crash! Too fast or drill not active.")
-				velocity = Vector2.ZERO  # zastav loď
+				velocity = Vector2.ZERO
