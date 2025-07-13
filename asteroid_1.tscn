@@ -1,8 +1,11 @@
-[gd_scene load_steps=4 format=3 uid="uid://cyr6khkmvwng0"]
+[gd_scene load_steps=5 format=3 uid="uid://cyr6khkmvwng0"]
 
 [ext_resource type="Texture2D" uid="uid://ckslxe23ut2s6" path="res://assets/asteroids/asteroid_1.png" id="1_nwwh6"]
 [ext_resource type="Script" uid="uid://d0cir3uwb847c" path="res://scripts/asteroid_1.gd" id="1_wrdws"]
 [ext_resource type="Texture2D" uid="uid://c7wyhlhy3r0mo" path="res://assets/asteroids/asteroid_1_mine.png" id="2_wrdws"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_wrdws"]
+radius = 402.12
 
 [node name="Asteroid1" type="Node2D"]
 script = ExtResource("1_wrdws")
@@ -12,6 +15,12 @@ script = ExtResource("1_wrdws")
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="StaticBody2D"]
 position = Vector2(0, -1)
 polygon = PackedVector2Array(246, 297, 286, 266, 293, 231, 327, 200, 362, 138, 360, 63, 393, -4, 403, -53, 329, -211, 292, -252, 224, -275, 171, -346, 94, -378, -1, -397, -79, -382, -101, -352, -179, -341, -210, -306, -251, -296, -283, -264, -292, -208, -343, -156, -379, -89, -378, -49, -403, 21, -367, 169, -316, 202, -275, 298, -246, 317, -210, 321, -154, 357, -110, 390, -51, 391, -21, 411, 28, 407, 83, 382, 116, 345, 189, 323, 227, 317)
+
+[node name="Area2D" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("CircleShape2D_wrdws")
+debug_color = Color(0.942756, 0.135121, 0.49807, 0.42)
 
 [node name="asteroid1" type="Sprite2D" parent="."]
 texture = ExtResource("1_nwwh6")

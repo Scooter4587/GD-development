@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://du35ocvqtnow"]
+[gd_scene load_steps=9 format=3 uid="uid://du35ocvqtnow"]
 
 [ext_resource type="Script" uid="uid://bds15cn4snnou" path="res://main.gd" id="1_lquwl"]
 [ext_resource type="Texture2D" uid="uid://cyyirr2hac04f" path="res://assets/background/space.png" id="2_7mycd"]
@@ -10,6 +10,9 @@
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_7mycd"]
 radius = 28.0
 height = 80.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_7mycd"]
+radius = 50.0
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_lquwl")
@@ -44,6 +47,10 @@ rotation = 1.5708
 texture = ExtResource("5_kek77")
 
 [node name="DrillDetector" type="Area2D" parent="Ship"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Ship/DrillDetector"]
+shape = SubResource("CircleShape2D_7mycd")
+debug_color = Color(0.194076, 0.620431, 0.470407, 0.42)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 

@@ -1,8 +1,8 @@
-extends CharacterBody2D  # 🔁 opravene z Node2D
+extends CharacterBody2D
 
 @onready var sprite_base = $SpriteBase
 @onready var sprite_thrust = $SpriteThrust
-@export var drill_speed_limit := 50.0
+@export var drill_speed_limit := 100.0
 
 var acceleration := 400.0
 var rotation_speed := 4.0
@@ -45,19 +45,30 @@ func _process(delta):
 		sprite_base.visible = true
 		sprite_thrust.visible = false
 
+	# Drill vstup – ľavé tlačidlo (môžeš zmeniť na pravé ak chceš)
 	drill_active = Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
 
-	position += velocity * delta  # zatiaľ OK, ale neskôr move_and_slide
 
 func _physics_process(delta):
+	move_and_slide()
 	check_drill_collision()
 
+
 func check_drill_collision():
-	for area in $DrillDetector.get_overlapping_areas():
+	var areas = $DrillDetector.get_overlapping_areas()
+	print("🔍 Overlapping areas count:", areas.size())
+
+	for area in areas:
+		print(" - Area name:", area.name, " | type:", area.get_class())
 		var asteroid = area.get_parent()
 		if asteroid.is_in_group("asteroid"):
+			print("✅ Asteroid detected: ", asteroid.name)
 			var speed = velocity.length()
+			print("Speed:", speed, "Drill active:", drill_active)
+
 			if drill_active and speed <= drill_speed_limit:
+				print("⛏️ Drill conditions met!")
 				asteroid.drill()
 			else:
 				print("💥 Crash! Too fast or drill not active.")
+				velocity = Vector2.ZERO  # zastav loď
