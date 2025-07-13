@@ -1,0 +1,15 @@
+[gd_scene load_steps=4 format=3 uid="uid://cyr6khkmvwng0"]
+
+[ext_resource type="Texture2D" uid="uid://ckslxe23ut2s6" path="res://assets/asteroids/asteroid_1.png" id="1_nwwh6"]
+[ext_resource type="Script" uid="uid://d0cir3uwb847c" path="res://scripts/asteroid_1.gd" id="1_wrdws"]
+[ext_resource type="Texture2D" uid="uid://c7wyhlhy3r0mo" path="res://assets/asteroids/asteroid_1_mine.png" id="2_wrdws"]
+
+[node name="Asteroid1" type="Node2D"]
+script = ExtResource("1_wrdws")
+
+[node name="asteroid1" type="Sprite2D" parent="."]
+texture = ExtResource("1_nwwh6")
+
+[node name="asteroid1_mine" type="Sprite2D" parent="."]
+visible = false
+texture = ExtResource("2_wrdws")

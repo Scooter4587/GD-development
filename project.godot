@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Astro Miner"
-run/main_scene="uid://cme5q7g0n4u86"
+run/main_scene="uid://du35ocvqtnow"
 config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="res://icon.svg"
 
