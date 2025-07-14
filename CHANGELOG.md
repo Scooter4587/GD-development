@@ -2,9 +2,16 @@
 
 ## [0.1.46] – 2025-07-14
 ### Added
-- ⚙️ Discord Changelog update 4 Hope last time
+- ⚙️ Discord Changelog update 5
 
 ---
+
+## [0.1.46] – 2025-07-14
+### Added
+- ⚙️ Discord Changelog update 4 Hope
+
+---
+
 ## [0.1.45] – 2025-07-14
 ### Added
 - ⚙️ Discord Changelog update 3
