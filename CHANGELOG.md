@@ -1,5 +1,18 @@
 # 📜 Changelog – AstroMiner 🚀
 
+
+## [0.1.44] – 2025-07-14
+### Added
+- ⚙️ Discord Changelog update 2
+
+---
+
+## [0.1.43] – 2025-07-14
+### Added
+- ⚙️ Discord Changelog update
+
+---
+
 ## [0.1.42] – 2025-07-14
 ### Added
 - 🌀 Spawnovaný minerálny podklad pod asteroid
