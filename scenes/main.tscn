@@ -28,8 +28,7 @@ z_index = -10
 texture = ExtResource("2_tipki")
 
 [node name="Ship" type="CharacterBody2D" parent="."]
-collision_layer = 3
-collision_mask = 3
+collision_mask = 2
 script = ExtResource("3_85g3d")
 
 [node name="ShipBody" type="CollisionShape2D" parent="Ship"]
@@ -52,7 +51,7 @@ texture = ExtResource("5_ya4ey")
 collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Ship/DrillDetector"]
-position = Vector2(50, 0)
+position = Vector2(60, 0)
 shape = SubResource("RectangleShape2D_a8y0u")
 debug_color = Color(0.194076, 0.620431, 0.470407, 0.42)
 

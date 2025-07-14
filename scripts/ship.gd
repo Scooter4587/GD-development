@@ -12,6 +12,8 @@ var drill_active := false
 var last_drill_state = false
 var last_asteroid_drilled = null
 
+
+
 func _process(delta):
 	var input_x = 0
 	var input_y = 0
@@ -72,14 +74,16 @@ func check_drill_collision():
 	var areas = $DrillDetector.get_overlapping_areas()
 	for area in areas:
 		var asteroid_node = area.get_parent()
-		
-		# Debug výpis: názov oblasti, jej rodiča a vlastníka scény
-		print("🚨 Kontakt s:", area.name, "| Parent:", asteroid_node.name, "| Owner:", area.get_owner().name)
-
 		if asteroid_node.name.begins_with("Asteroid"):
+			print("🚨 Kontakt s asteroid tile:", asteroid_node.name)
+
 			var speed = velocity.length()
 			if drill_active and speed <= drill_speed_limit:
-				print("⛏️ Pokus o vrtanie do:", asteroid_node.name)
-				
-				# Skúsme zavolať vrtanie priamo na asteroid node
-				asteroid_node.drill_at_tile($DrillDetector.global_position)
+				print("🛠️ Attempting to drill...")
+
+				# Skontroluj, či objekt má metódu drill_at_tile
+				if not asteroid_node.has_method("drill_at_tile"):
+					print("❌ Asteroid nemá metódu drill_at_tile!")
+				else:
+					print("✅ Asteroid má drill_at_tile(), spúšťame...")
+					asteroid_node.drill_at_tile($DrillDetector.global_position)
