@@ -1,5 +1,10 @@
 # 📜 Changelog – AstroMiner 🚀
 
+## [0.1.45] – 2025-07-14
+### Added
+- ⚙️ Discord Changelog update 3
+
+---
 
 ## [0.1.44] – 2025-07-14
 ### Added
