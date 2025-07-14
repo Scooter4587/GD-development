@@ -1,16 +1,32 @@
-# 📜 Changelog – Astro Miner 🚀
+# 📜 Changelog – AstroMiner 🚀
 
-### [0.1.4] - 2025-7-14
+## [0.1.42] – 2025-07-14
+### Added
+- 🌀 Spawnovaný minerálny podklad pod asteroid
+- ⚙️ Znížený debug výstup
+- ✅ Odstránené červené debug štvorčeky po vŕtaní
+
+---
+
+## [0.1.41] – 2025-07-14
+### Added
+- Discord Connection
+
+---
+
+## [0.1.4] – 2025-07-14
 ### Added
 - 💥 Drill systém prvýkrát funkčný!
 - 🎨 Pridaný minerálny podklad (mined layer)
 - 🐛 Fix: Riešenie problému s nesprávnym tile ID
 
+---
 
-## [0.1.3] - 2025-07-13
+## [0.1.3] – 2025-07-13
 - Tile set Collisions fixed
 - Drill still not working
 
+---
 
 ## [0.1.2] – 2025-07-12
 ### Added
