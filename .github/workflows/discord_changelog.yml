@@ -12,13 +12,26 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Read and send changelog
+      - name: Read latest changelog section and send to Discord
         run: |
-          LAST_CHANGELOG=$(awk '/^## /{if (found) exit; found=1} found' CHANGELOG.md)
-          # Formátujeme správu ako viacriadkový reťazec
-          MESSAGE="🛠️ **Nový update AstroMiner!**\n\n\`\`\`\n$LAST_CHANGELOG\n\`\`\`"
+          # Načítaj poslednú sekciu changelogu začínajúcu na "## ["
+          LAST_CHANGELOG=$(awk '
+            BEGIN { found=0 }
+            /^## \[/ {
+              if (found) exit
+              found=1
+            }
+            found { print }
+          ' CHANGELOG.md)
+
+          echo -e "📦 Odosielam na Discord:\n$LAST_CHANGELOG"
+
+          # Priprav JSON payload
+          PAYLOAD=$(jq -n --arg content "🛠️ **Nový update AstroMiner!**\n$LAST_CHANGELOG" '{content: $content}')
+
+          # Pošli payload na Discord webhook
           curl -X POST -H "Content-Type: application/json" \
-               -d "{\"content\": \"$MESSAGE\"}" \
+               -d "$PAYLOAD" \
                "$WEBHOOK_URL"
         env:
           WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK }}
