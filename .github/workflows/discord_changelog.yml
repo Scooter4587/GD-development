@@ -1,0 +1,51 @@
+name: Push changelog to Discord
+
+on:
+  push:
+    branches:
+      - main  # Alebo iná tvoja hlavná vetva
+
+jobs:
+  send-discord:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract latest changelog
+        id: changelog
+        run: |
+          VERSION=$(awk '/^## /{print $2; exit}' CHANGELOG.md)
+          RAW_LOG=$(awk '/^## /{if (count++) exit} count' CHANGELOG.md | tail -n +2)
+          ESCAPED_LOG=$(echo "$RAW_LOG" | jq -Rs .)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "log=$ESCAPED_LOG" >> $GITHUB_OUTPUT
+
+      - name: Send to Discord
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          curl -X POST -H "Content-Type: application/json" \
+          -d "$(jq -n \
+            --arg username 'AstroMiner Bot 🚀' \
+            --arg avatar_url 'https://cdn-icons-png.flaticon.com/512/3208/3208754.png' \
+            --arg title "🛠️ Nový update AstroMiner: ${{ steps.changelog.outputs.version }}" \
+            --arg description ${{ steps.changelog.outputs.log }} \
+            --arg url 'https://github.com/Scooter4587/GD-development' \
+            --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '{
+              username: $username,
+              avatar_url: $avatar_url,
+              embeds: [{
+                title: $title,
+                description: $description,
+                color: 5814783,
+                url: $url,
+                timestamp: $timestamp,
+                footer: {
+                  text: "AstroMiner GitHub",
+                  icon_url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+                }
+              }]
+            }')" \
+          "$DISCORD_WEBHOOK"
