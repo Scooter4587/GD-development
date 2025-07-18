@@ -1,7 +1,7 @@
 [gd_scene load_steps=10 format=4 uid="uid://degs3x0jh26yq"]
 
 [ext_resource type="Texture2D" uid="uid://ckslxe23ut2s6" path="res://assets/asteroids/asteroid_1.png" id="1_1jl1b"]
-[ext_resource type="Script" uid="uid://dlqewixg248lh" path="res://scripts/asteroid_1.gd" id="1_dg36a"]
+[ext_resource type="Script" uid="uid://dlqewixg248lh" path="res://scripts/asteroids.gd" id="1_dg36a"]
 [ext_resource type="Texture2D" uid="uid://c7wyhlhy3r0mo" path="res://assets/asteroids/asteroid_1_mine.png" id="2_dg36a"]
 
 [sub_resource type="TileMapPattern" id="TileMapPattern_nek4m"]
