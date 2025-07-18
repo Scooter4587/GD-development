@@ -1,5 +1,14 @@
 # 📜 Changelog – AstroMiner 🚀
 
+## [0.1.48] – 2025-07-14
+### Added
+- Total Drill systém overhaul
+- Full reworked code
+- NEXT - ship movement
+
+---
+
+
 ## [0.1.46] – 2025-07-14
 ### Added
 - ⚙️ Discord Changelog update 5
