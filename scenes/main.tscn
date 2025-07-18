@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=4 uid="uid://du35ocvqtnow"]
+[gd_scene load_steps=24 format=4 uid="uid://du35ocvqtnow"]
 
 [ext_resource type="Script" uid="uid://bds15cn4snnou" path="res://main.gd" id="1_o6xl0"]
 [ext_resource type="Texture2D" uid="uid://cyyirr2hac04f" path="res://assets/background/space.png" id="2_tipki"]
@@ -3909,12 +3909,6 @@ sources/0 = SubResource("TileSetAtlasSource_rk71r")
 pattern_0 = SubResource("TileMapPattern_nek4m")
 pattern_1 = SubResource("TileMapPattern_g8sds")
 
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_tipki"]
-texture = ExtResource("8_choun")
-
-[sub_resource type="TileSet" id="TileSet_85g3d"]
-sources/0 = SubResource("TileSetAtlasSource_tipki")
-
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_jbj1t"]
 texture = ExtResource("10_trceg")
 7:1/0 = 0
@@ -4249,12 +4243,7 @@ tile_map_data = PackedByteArray("AAD7/+f/AAAbAAcAAAD8/+f/AAAcAAcAAAD9/+f/AAAdAAc
 tile_set = SubResource("TileSet_hkm1w")
 script = ExtResource("9_trceg")
 
-[node name="AsteroidMined" type="TileMapLayer" parent="Asteroid1"]
-visible = false
-z_index = -1
-tile_set = SubResource("TileSet_85g3d")
-
-[node name="Sprite2D" type="Sprite2D" parent="Asteroid1"]
+[node name="MinedSprite" type="Sprite2D" parent="Asteroid1"]
 z_index = -1
 position = Vector2(31, 0)
 texture = ExtResource("8_choun")
