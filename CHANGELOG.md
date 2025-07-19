@@ -1,5 +1,12 @@
 # 📜 Changelog – AstroMiner 🚀
 
+## [0.1.481] – 2025-07-19
+### Added
+- Ship Movement overhaul
+- Arcade mode
+- Tons of variables for future options
+
+---
 ## [0.1.48] – 2025-07-14
 ### Added
 - Total Drill systém overhaul
