@@ -1,0 +1,63 @@
+[gd_scene format=3 uid="uid://ctobyfaajvwb5"]
+
+[node name="HUD" type="CanvasLayer"]
+
+[node name="SpeedMargin" type="MarginContainer" parent="."]
+offset_left = 466.0
+offset_top = 559.0
+offset_right = 875.0
+offset_bottom = 636.0
+
+[node name="SpeedPanel" type="HBoxContainer" parent="SpeedMargin"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="SpeedMargin/SpeedPanel"]
+visible = false
+layout_mode = 2
+text = "\"Speed:\""
+
+[node name="SpeedValue" type="Label" parent="SpeedMargin/SpeedPanel"]
+layout_mode = 2
+text = "Speed 0.0 m/s"
+
+[node name="ResourceMargin" type="MarginContainer" parent="."]
+offset_left = 30.0
+offset_top = 33.0
+offset_right = 266.0
+offset_bottom = 110.0
+
+[node name="ResourcePanel" type="VBoxContainer" parent="ResourceMargin"]
+layout_mode = 2
+
+[node name="CrystalRow" type="HBoxContainer" parent="ResourceMargin/ResourcePanel"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ResourceMargin/ResourcePanel/CrystalRow"]
+layout_mode = 2
+text = "Crystal:"
+
+[node name="CrystalValue" type="Label" parent="ResourceMargin/ResourcePanel/CrystalRow"]
+layout_mode = 2
+text = "Crystal: 0"
+
+[node name="FuelRow" type="HBoxContainer" parent="ResourceMargin/ResourcePanel"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ResourceMargin/ResourcePanel/FuelRow"]
+layout_mode = 2
+text = "Fuel:"
+
+[node name="FuelValue" type="Label" parent="ResourceMargin/ResourcePanel/FuelRow"]
+layout_mode = 2
+text = "Fuel: 0"
+
+[node name="TitaniumRow" type="HBoxContainer" parent="ResourceMargin/ResourcePanel"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ResourceMargin/ResourcePanel/TitaniumRow"]
+layout_mode = 2
+text = "Titanium:"
+
+[node name="TitaniumValue" type="Label" parent="ResourceMargin/ResourcePanel/TitaniumRow"]
+layout_mode = 2
+text = "Titanium: 0"

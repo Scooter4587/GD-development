@@ -1,5 +1,12 @@
 # 📜 Changelog – AstroMiner 🚀
 
+## [0.1.5] – 2025-07-19
+### Added
+- Resource tile detection
+- Resource counter
+- UI rework - HUD UI upgraded
+
+---
 ## [0.1.481] – 2025-07-19
 ### Added
 - Ship Movement overhaul

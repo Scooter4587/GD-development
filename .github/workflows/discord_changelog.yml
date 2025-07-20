@@ -20,6 +20,7 @@ jobs:
             /^## \[/ {
               if (found) exit
               found=1
+              sub(/^## /, "")  # odstráni "## " z prvého riadku
             }
             found { print }
           ' CHANGELOG.md)
@@ -27,7 +28,7 @@ jobs:
           echo -e "📦 Odosielam na Discord:\n$LAST_CHANGELOG"
 
           # Priprav JSON payload
-          PAYLOAD=$(jq -n --arg content "🛠️ **Nový update AstroMiner!**\n$LAST_CHANGELOG" '{content: $content}')
+          PAYLOAD=$(jq -n --arg content "🛠️ **Nový update AstroMiner!**\n\n$LAST_CHANGELOG" '{content: $content}')
 
           # Pošli payload na Discord webhook
           curl -X POST -H "Content-Type: application/json" \

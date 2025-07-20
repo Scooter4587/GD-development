@@ -1,13 +1,15 @@
+extends Node 
+
+signal inventory_changed(counts: Dictionary)
+
 # 📂 File: mine_items.gd
 # Tento skript spravuje definície a inventár surovín.
 
-extends Node
-
 # 🔢 Mapa tile_id → názov resource (exportované pre ľahké rozšírenie v editore)
 @export var tile_data: Dictionary[int, String] = {
-	0: "titanium",
+	0: "crystal",
 	1: "fuel",
-	2: "crystal"
+	2: "titanium"
 }
 
 # 🧱 Definície vlastností jednotlivých surovín (exportované pre úpravy v editore)
@@ -33,7 +35,8 @@ extends Node
 var inventory: Dictionary[String, int] = {}
 
 func _ready() -> void:
-	# Inicializujeme inventár so všemožnými typmi surovín na 0
+	# Inicializujeme inventár so všetkými typmi surovín na 0
+	inventory.clear()
 	for res_name in resource_defs.keys():
 		inventory[res_name] = 0
 
@@ -55,32 +58,38 @@ func is_drillable(tile_id: int) -> bool:
 func add_resource(res_type: String, amount: int = 1) -> void:
 	if inventory.has(res_type):
 		inventory[res_type] += amount
+		# po aktualizácii inventára
+		emit_signal("inventory_changed", inventory.duplicate())
 	else:
-		push_warning("Unknown resource type: " + res_type)
+		push_warning("Unknown resource type: %s" % res_type)
 
 # 📊 Vráti aktuálne množstvo v inventári (0, ak neexistuje)
 func get_amount(res_type: String) -> int:
 	return inventory.get(res_type, 0)
 
+# Vráti mapu resource_type → počet dlaždíc, ktoré by sa dali vŕtať v danej oblasti
+func count_resources_in_region(
+		layer: TileMapLayer,
+		center: Vector2,
+		forward: Vector2,
+		right: Vector2,
+		w: int,
+		h: int,
+		tile_size: float
+	) -> Dictionary:
+	var result: Dictionary[String, int] = {}
+	for i in range(w):
+		var side_offset = (i - (w - 1) / 2.0) * tile_size
+		for j in range(h):
+			var front_offset = j * tile_size
+			var world_pos    = center + right * side_offset + forward * front_offset
 
-#var titanium := 0
-#var fuel := 0
-#var crystal := 0
-
-#func add_resource(resource_type: String, amount: int = 1):
-#	match resource_type:
-#		"titanium": titanium += amount
-#		"fuel": fuel += amount
-#		"crystal": crystal += amount
-#	print("Collected ", resource_type, " → Total: ", get(resource_type))
-
-#func get_amount(resource_type: String) -> int:
-#	match resource_type:
-#		"titanium":
-#			return titanium
-#		"fuel":
-#			return fuel
-#		"crystal":
-#			return crystal
-#		_:
-#			return 0
+			# 1) Prevod na súradnice buniek
+			var cell    = layer.local_to_map(layer.to_local(world_pos))
+			# 2) Získanie source ID (–1 = prázdna bunka)
+			var tile_id = layer.get_cell_source_id(cell)
+			# 3) Ak je drillable, zvýšíme počítadlo
+			if tile_id != -1 and is_drillable(tile_id):
+				var res_name = get_resource_name(tile_id)
+				result[res_name] = result.get(res_name, 0) + 1
+	return result
