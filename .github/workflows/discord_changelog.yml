@@ -14,21 +14,24 @@ jobs:
 
       - name: Read latest changelog section and send to Discord
         run: |
-          # Načítaj poslednú sekciu changelogu začínajúcu na "## ["
+          # Načítaj poslednú sekciu changelogu
           LAST_CHANGELOG=$(awk '
             BEGIN { found=0 }
             /^## \[/ {
               if (found) exit
               found=1
-              sub(/^## /, "")  # odstráni "## " z prvého riadku
+              sub(/^## /, "")
             }
             found { print }
           ' CHANGELOG.md)
 
-          echo -e "📦 Odosielam na Discord:\n$LAST_CHANGELOG"
+          # Vytvor správu s reálnymi novými riadkami
+          CONTENT=$(printf "🛠️ **Nový update AstroMiner!**\n\n%s" "$LAST_CHANGELOG")
 
-          # Priprav JSON payload
-          PAYLOAD=$(jq -n --arg content "🛠️ **Nový update AstroMiner!**\n\n$LAST_CHANGELOG" '{content: $content}')
+          echo -e "📦 Odosielam na Discord:\n$CONTENT"
+
+          # Priprav JSON payload s opravou nových riadkov
+          PAYLOAD=$(jq -n --arg content "$CONTENT" '{content: $content}')
 
           # Pošli payload na Discord webhook
           curl -X POST -H "Content-Type: application/json" \

@@ -1,5 +1,21 @@
 # 📜 Changelog – AstroMiner 🚀
 
+## [0.1.51] – 2025-07-25
+### Added
+- Hull UI
+- HP, Collisions, Bounce
+- Drill and Ship variables Rework
+- Config background for ship systems implemented
+
+### Issues
+- Straight impacts bounce not working good
+- Drill Lock avoids normal bounce speed
+- Secondary bumps 
+
+### To-do
+- Fix bounces system
+- Other ship systems
+
 ## [0.1.5] – 2025-07-19
 ### Added
 - Resource tile detection

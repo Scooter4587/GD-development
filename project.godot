@@ -19,6 +19,9 @@ config/icon="res://icon.svg"
 
 ResourceData="*res://scripts/mine_items.gd"
 AsteroidData="*res://scripts/asteroids_data.gd"
+ShipModules="*res://autoloads/ShipModules.gd"
+ShipStats="*res://autoloads/ShipStats.gd"
+ShipConfig="*res://autoloads/ShipConfig.gd"
 
 [input]
 

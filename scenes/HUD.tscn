@@ -2,23 +2,36 @@
 
 [node name="HUD" type="CanvasLayer"]
 
-[node name="SpeedMargin" type="MarginContainer" parent="."]
+[node name="StatsMargin" type="MarginContainer" parent="."]
 offset_left = 466.0
 offset_top = 559.0
 offset_right = 875.0
 offset_bottom = 636.0
 
-[node name="SpeedPanel" type="HBoxContainer" parent="SpeedMargin"]
+[node name="SpeedPanel" type="HBoxContainer" parent="StatsMargin"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="SpeedMargin/SpeedPanel"]
+[node name="Label" type="Label" parent="StatsMargin/SpeedPanel"]
 visible = false
 layout_mode = 2
 text = "\"Speed:\""
 
-[node name="SpeedValue" type="Label" parent="SpeedMargin/SpeedPanel"]
+[node name="SpeedValue" type="Label" parent="StatsMargin/SpeedPanel"]
 layout_mode = 2
 text = "Speed 0.0 m/s"
+
+[node name="StatusContainer" type="VBoxContainer" parent="StatsMargin"]
+layout_mode = 2
+
+[node name="HullContainer" type="HBoxContainer" parent="StatsMargin/StatusContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="StatsMargin/StatusContainer/HullContainer"]
+layout_mode = 2
+
+[node name="HullBar" type="ProgressBar" parent="StatsMargin/StatusContainer/HullContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="ResourceMargin" type="MarginContainer" parent="."]
 offset_left = 30.0
