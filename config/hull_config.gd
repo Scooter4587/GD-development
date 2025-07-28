@@ -13,3 +13,10 @@ class_name HullConfig
 # Treshold
 @export var damage_threshold: float = 20.0                       # minimálna rýchlosť (m/s) na to, aby sa aplikuje damage
 @export var invulnerability_duration: float = 0.2                # sekúnd, počas ktorých si imúnny po náraze
+
+# --- 🚀 Bounce & kolízie ---
+@export var bounce_impulse_multiplier_high: float = 1.0
+@export var bounce_impulse_multiplier_low: float  = 0.5
+@export var bounce_speed_threshold: float         = 100.0
+@export var bounce_decay: float                   = 0.8
+@export var bounce_reset_time: float              = 0.2

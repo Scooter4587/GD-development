@@ -1,76 +1,69 @@
 extends CanvasLayer
 
 # Autoload singletons
-@onready var stats      = get_node("/root/ShipStats")
-@onready var config     = get_node("/root/ShipConfig")
+@onready var stats  = get_node("/root/ShipStats")
+@onready var config = get_node("/root/ShipConfig")
 
-# Cesty k premenovaným Labelom
-@onready var lbl_speed    = $StatsMargin/SpeedPanel/SpeedValue
-@onready var lbl_crystal  = $ResourceMargin/ResourcePanel/CrystalRow/CrystalValue
-@onready var lbl_fuel     = $ResourceMargin/ResourcePanel/FuelRow/FuelValue
-@onready var lbl_titanium = $ResourceMargin/ResourcePanel/TitaniumRow/TitaniumValue
+# UI node references
+@onready var lbl_speed  = $StatsMargin/SpeedPanel/SpeedValue
+@onready var hull_bar   = $StatsMargin/StatusContainer/HullContainer/HullBar
+@onready var hull_label = $StatsMargin/StatusContainer/HullContainer/HullLabel
+@onready var fuel_bar   = $StatsMargin/StatusContainer/FuelContainer/FuelBar
+@onready var fuel_label = $StatsMargin/StatusContainer/FuelContainer/FuelLabel
 
-# Nový HullBar v spodnej strede
-@onready var hull_bar     = $StatsMargin/StatusContainer/HullContainer/HullBar
+# Reference to ship for retrieving data
+var ship_ref
 
-var ship_ref: CharacterBody2D
-
-# Nastaví referenciu na loď z Main-scény
-func set_ship(ship: CharacterBody2D) -> void:
+func set_ship(ship) -> void:
 	ship_ref = ship
+	if not ship_ref.is_connected("fuel_low", Callable(self, "_on_fuel_low")):
+		ship_ref.connect("fuel_low", Callable(self, "_on_fuel_low"))
 
 func _ready() -> void:
+	# Auto-assign ship_ref if not set in main scene
+	if ship_ref == null:
+		ship_ref = get_node("/root/Main/Ship")
+		if not ship_ref.is_connected("fuel_low", Callable(self, "_on_fuel_low")):
+			ship_ref.connect("fuel_low", Callable(self, "_on_fuel_low"))
 
-	# Nastavíme referenciu na loď
-	# hud.set_ship(ship)  # ak to tu ešte nemáš
-
-	# Pripojíme sa na zmeny inventára
-	ResourceData.connect("inventory_changed", Callable(self, "_on_inventory_changed"))
-
-	 # Signály pre hull
+	# Hull signal connections
 	stats.connect("hull_damaged",   Callable(self, "_on_hull_changed"))
 	stats.connect("hull_destroyed", Callable(self, "_on_hull_changed"))
 	stats.connect("hull_restored",  Callable(self, "_on_hull_reset"))
 
-	# Inicializujeme speed a resources
+	# Initial speed display
 	_update_speed(0.0)
-	_update_resources({
-		"crystal": 0,
-		"fuel": 0,
-		"titanium": 0
-	})
 
-	# --- Inicializácia HullBar ---
+	# HullBar setup
 	hull_bar.min_value = 0
 	hull_bar.max_value = config.hull.hull_max
 	hull_bar.value     = stats.hull_current
-
-	# Nastavíme počiatočnú farbu
+	hull_label.text    = "HULL"
 	_update_hull_bar_color()
 
-func _process(_delta: float) -> void:
-	# Speed update
-	if ship_ref:
-		_update_speed(ship_ref.velocity.length())
+	# FuelBar setup
+	fuel_bar.min_value = 0
+	fuel_bar.max_value = config.fuel.fuel_max
+	fuel_bar.value     = ship_ref.fuel_current
+	fuel_label.text    = "FUEL"
+	_update_fuel_bar_color()
 
-# Inventár
-func _on_inventory_changed(counts: Dictionary) -> void:
-	_update_resources(counts)
+func _process(_delta: float) -> void:
+	if ship_ref:
+		# Update speed
+		_update_speed(ship_ref.velocity.length())
+		# Update fuel bar and color
+		fuel_bar.value = ship_ref.fuel_current
+		_update_fuel_bar_color()
 
 func _update_speed(speed: float) -> void:
 	lbl_speed.text = "Speed: %.1f m/s" % speed
 
-func _update_resources(counts: Dictionary) -> void:
-	lbl_crystal.text  = str(counts.get("crystal", 0))
-	lbl_fuel.text     = str(counts.get("fuel", 0))
-	lbl_titanium.text = str(counts.get("titanium", 0))
-
-# Hull handlers
+# --- Hull callbacks and styling ---
 func _on_hull_changed(_dmg: float) -> void:
-	# Aktualizujeme hodnotu aj farbu
 	hull_bar.value = stats.hull_current
 	_update_hull_bar_color()
-	# Bliknutie pre upozornenie (voliteľné)
+	# flash red on damage
 	hull_bar.modulate = Color(1, 0.5, 0.5)
 	await get_tree().create_timer(0.2).timeout
 	hull_bar.modulate = Color(1, 1, 1)
@@ -79,18 +72,20 @@ func _on_hull_reset() -> void:
 	hull_bar.value = stats.hull_current
 	_update_hull_bar_color()
 
-	# Funkcia, ktorá sprehľadní výpočet a override štýlu
 func _update_hull_bar_color() -> void:
 	var pct = stats.hull_current / config.hull.hull_max * 100
-	var color: Color
-	if pct >= 70.0:
-		color = Color(0, 1, 0)       # zelená
-	elif pct >= 30.0:
-		color = Color(1, 1, 0)       # žltá
-	else:
-		color = Color(1, 0, 0)       # červená
+	var bar_color: Color = Color(0,1,0) if pct >= 70.0 else (Color(1,1,0) if pct >= 30.0 else Color(1,0,0))
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = bar_color
+	hull_bar.add_theme_stylebox_override("fill", sb)
 
-	# Vytvoríme nový StyleBoxFlat a prepíšeme „fill“ štýl
+# --- Fuel low indication and styling ---
+func _on_fuel_low() -> void:
+	fuel_bar.modulate = Color(1, 0, 0)
+
+func _update_fuel_bar_color() -> void:
+	var threshold = config.fuel.fuel_low_threshold * config.fuel.fuel_max
+	var color: Color = Color(1,0.5,0) if fuel_bar.value > threshold else Color(1,0,0)
 	var sb = StyleBoxFlat.new()
 	sb.bg_color = color
-	hull_bar.add_theme_stylebox_override("fill", sb)
+	fuel_bar.add_theme_stylebox_override("fill", sb)

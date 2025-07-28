@@ -8,6 +8,7 @@ extends CharacterBody2D
 
 signal drill_locked
 signal drill_unlocked
+signal fuel_low
 
 # --- 🚀 Interné premenné pohybu ---
 var acceleration: float        = 200.0
@@ -16,53 +17,69 @@ var desired_direction: Vector2 = Vector2.ZERO
 var is_accelerating: bool      = false
 var _collided_last_frame: bool = false
 var _invuln_time: float        = 0.0
-var _time_since_bounce: float = 1e6
-var _bounce_count: int = 0
+var _time_since_bounce: float  = 1e6
+var _bounce_count: int         = 0
+
+# --- 🔋 Fuel systém ---
+var fuel_current: float        = 0.0  # nastavíme v _ready()
 
 # --- 🔁 Stav vrtáka ---
 var is_drilling: bool       = false
 var drill_lock_timer: float = 0.0
 
 func _ready() -> void:
+	# inicializácia fuel
+	fuel_current = cfg.fuel.fuel_max
 	drill_tool.connect("drill_started", Callable(self, "_on_drill_started"))
 	drill_tool.connect("drill_ended",   Callable(self, "_on_drill_ended"))
 
 func _physics_process(delta: float) -> void:
-	# 0) Update timers for invulnerability, drill-lock, bounce-reset
+	# 0) Update timers
 	if _invuln_time > 0.0:
 		_invuln_time = max(_invuln_time - delta, 0.0)
 	if drill_lock_timer > 0.0:
 		drill_lock_timer = max(drill_lock_timer - delta, 0.0)
 	_time_since_bounce += delta
 
-	# 1) Handle player input
+	# fuel warning
+	if fuel_current <= cfg.fuel.fuel_low_threshold * cfg.fuel.fuel_max:
+		emit_signal("fuel_low")
+
+	# 1) Handle input
 	handle_input()
 
-	# 2) Movement or full-stop logic
+	# 2) Movement or full-stop
 	if Input.is_action_pressed("full_stop"):
+		_consume_thrusters(delta)
 		is_accelerating = false
 		var br = cfg.brake_speed if cfg.require_rotation_alignment else cfg.arc_brake_speed
 		velocity = velocity.move_toward(Vector2.ZERO, br * delta)
 		if not cfg.require_rotation_alignment and input_buffer != Vector2.ZERO:
+			_consume_thrusters(delta)
 			rotation = lerp_angle(rotation, input_buffer.angle(), cfg.arc_rotation_speed * delta)
 		elif cfg.require_rotation_alignment:
 			handle_rotation(delta)
 	else:
 		if not cfg.require_rotation_alignment:
+			if input_buffer != Vector2.ZERO and fuel_current > 0:
+				_consume_main(delta)
+				is_accelerating = true
+			else:
+				is_accelerating = false
 			_arcade_movement(delta)
 		else:
 			handle_rotation(delta)
+			if desired_direction != Vector2.ZERO and fuel_current > 0:
+				_consume_main(delta)
+				is_accelerating = true
+			else:
+				is_accelerating = false
 			handle_realistic_movement(delta)
 
-	# 3) Drill-speed lock logic
+	# 3) Drill lock logic
 	if Input.is_action_pressed("full_stop"):
+		_consume_thrusters(delta)
 		is_accelerating = false
-		var br2 = cfg.brake_speed if cfg.require_rotation_alignment else cfg.arc_brake_speed
-		velocity = velocity.move_toward(Vector2.ZERO, br2 * delta)
-		if not cfg.require_rotation_alignment and input_buffer != Vector2.ZERO:
-			rotation = lerp_angle(rotation, input_buffer.angle(), cfg.arc_rotation_speed * delta)
-		elif cfg.require_rotation_alignment:
-			handle_rotation(delta)
 	elif is_drilling or drill_lock_timer > 0.0:
 		is_accelerating = false
 		var dir = velocity.normalized() if velocity.length() > 0.0 else input_buffer
@@ -72,79 +89,80 @@ func _physics_process(delta: float) -> void:
 	# 4) Update thrust sprite
 	update_thrust_sprite()
 
-	# 5) Save previous velocity for collision responses
+	# 5) Save velocity and move
 	var prev_vel = velocity
-
-	# 6) Move
 	move_and_slide()
 
-	# 7) Slide-bounce
+	# 6) Collisions
+	_handle_slide_bounce(prev_vel)
+	_handle_axis_bounce(prev_vel, delta)
+
+# --- Fuel consumption methods ---
+func _consume_main(delta: float) -> void:
+	var cost = cfg.fuel.fuel_main_engine_per_sec * delta
+	fuel_current = max(fuel_current - cost, 0)
+
+func _consume_thrusters(delta: float) -> void:
+	var cost = cfg.fuel.fuel_thrusters_per_sec * delta
+	fuel_current = max(fuel_current - cost, 0)
+
+# --- Bounce handling ---
+func _handle_slide_bounce(prev_vel: Vector2) -> void:
 	var hit = get_slide_collision_count() > 0
 	if hit and not _collided_last_frame and _invuln_time <= 0.0:
 		var speed = prev_vel.length()
 		if speed >= cfg.hull.damage_threshold and not is_drilling:
 			stats.apply_hull_damage(speed)
 		if not is_drilling:
-			# reset alebo inkrement bounce-count
-			if _time_since_bounce <= cfg.bounce_reset_time:
+			if _time_since_bounce <= cfg.hull.bounce_reset_time:
 				_bounce_count += 1
 			else:
 				_bounce_count = 1
 			_time_since_bounce = 0
-			# vyber base multiplier podľa rýchlosti
-			var base_mult = cfg.bounce_impulse_multiplier_high if speed >= cfg.bounce_speed_threshold else cfg.bounce_impulse_multiplier_low
-			# aplikuj decay pre sekundárne odbitia
-			var final_mult = base_mult * pow(cfg.bounce_decay, _bounce_count - 1)
-			# odraz a nastavenie invuln
 			var normal = get_slide_collision(0).get_normal()
+			var base_mult = cfg.hull.bounce_impulse_multiplier_high if speed >= cfg.hull.bounce_speed_threshold else cfg.hull.bounce_impulse_multiplier_low
+			var final_mult = base_mult * pow(cfg.hull.bounce_decay, _bounce_count - 1)
 			velocity = prev_vel.bounce(normal) * final_mult
 			_invuln_time = cfg.hull.invulnerability_duration
 	_collided_last_frame = hit
 
-	# 8) Axis-aligned probe bounce (fallback)
-	if not hit \
-	   and input_buffer != Vector2.ZERO \
-	   and prev_vel.length() > cfg.hull.damage_threshold \
-	   and _invuln_time <= 0.0:
+func _handle_axis_bounce(prev_vel: Vector2, delta: float) -> void:
+	if get_slide_collision_count() > 0:
+		return
+	if input_buffer == Vector2.ZERO or prev_vel.length() <= cfg.hull.damage_threshold or _invuln_time > 0.0:
+		return
+	var from = global_position
+	var to = from + prev_vel * delta
+	var query = PhysicsRayQueryParameters2D.new()
+	query.from = from
+	query.to = to
+	query.exclude = [self]
+	query.collision_mask = collision_layer
+	query.collide_with_areas = false
+	var col = get_world_2d().direct_space_state.intersect_ray(query)
+	if col:
+		var speed = prev_vel.length()
+		if speed >= cfg.hull.damage_threshold:
+			stats.apply_hull_damage(speed)
+		if _time_since_bounce <= cfg.hull.bounce_reset_time:
+			_bounce_count += 1
+		else:
+			_bounce_count = 1
+		_time_since_bounce = 0
+		var base_mult = cfg.hull.bounce_impulse_multiplier_high if speed >= cfg.hull.bounce_speed_threshold else cfg.hull.bounce_impulse_multiplier_low
+		var final_mult = base_mult * pow(cfg.hull.bounce_decay, _bounce_count - 1)
+		velocity = prev_vel.bounce(col.normal) * final_mult
+		_invuln_time = cfg.hull.invulnerability_duration
+		_collided_last_frame = true
 
-		var from = global_position
-		var to = from + prev_vel * delta
-		var space_state = get_world_2d().direct_space_state
-		var query = PhysicsRayQueryParameters2D.new()
-		query.from = from
-		query.to = to
-		query.exclude = [self]
-		query.collision_mask = collision_layer
-		query.collide_with_areas = false
-
-		var col = space_state.intersect_ray(query)
-		if col:
-			var speed = prev_vel.length()
-			if speed >= cfg.hull.damage_threshold:
-				stats.apply_hull_damage(speed)
-			# reset alebo inkrement bounce-count
-			if _time_since_bounce <= cfg.bounce_reset_time:
-				_bounce_count += 1
-			else:
-				_bounce_count = 1
-			_time_since_bounce = 0
-			# vyber multiplikátor podľa rýchlosti
-			var base_mult = cfg.bounce_impulse_multiplier_high if speed >= cfg.bounce_speed_threshold else cfg.bounce_impulse_multiplier_low
-			var final_mult = base_mult * pow(cfg.bounce_decay, _bounce_count - 1)
-			velocity = prev_vel.bounce(col.normal) * final_mult
-			_invuln_time = cfg.hull.invulnerability_duration
-			_collided_last_frame = true
-		
 func handle_input() -> void:
 	input_buffer = Vector2(
 		Input.get_action_strength("move_right") - Input.get_action_strength("move_left"),
 		Input.get_action_strength("move_down")  - Input.get_action_strength("move_up")
 	).normalized()
 	if Input.is_action_just_pressed("toggle_movement_mode"):
-		# prepni v config
 		cfg.require_rotation_alignment = not cfg.require_rotation_alignment
-		print("Režim pohybu:",
-			  "Realistický" if cfg.require_rotation_alignment else "Arkádový")
+		print("Režim pohybu:", "Realistický" if cfg.require_rotation_alignment else "Arkádový")
 
 func _arcade_movement(delta: float) -> void:
 	if input_buffer != Vector2.ZERO:

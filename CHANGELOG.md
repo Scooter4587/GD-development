@@ -1,5 +1,13 @@
 # 📜 Changelog – AstroMiner 🚀
 
+## [0.1.53] – 2025-07-28
+### Added
+- Fuel system implemented
+- Fuel Bar and low level alert
+- Variables define fuel consumption
+
+---
+
 ## [0.1.52] – 2025-07-28
 ### Added
 - Ship Movement Bounce fixed
