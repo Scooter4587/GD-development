@@ -17,5 +17,12 @@ extends Node
 @export var require_rotation_alignment: bool = true
 @export var stop_thrust_on_rotate: bool      = true
 
+# --- odrazy a kolízie ---
+@export var bounce_impulse_multiplier_high: float = 1.0   # pri rýchlosti ≥ threshold
+@export var bounce_impulse_multiplier_low: float  = 0.5   # pri rýchlosti < threshold
+@export var bounce_speed_threshold: float = 100.0        # hranica v m/s
+@export var bounce_decay:        float = 0.8   # exponent pre sekundárne odbitia
+@export var bounce_reset_time:   float = 0.2   # čas (s) na reset čítača odbití
+
 func _ready() -> void:
 	print(">> ShipConfig ready: hull_max =", hull.hull_max)

@@ -1,5 +1,13 @@
 # 📜 Changelog – AstroMiner 🚀
 
+## [0.1.52] – 2025-07-28
+### Added
+- Ship Movement Bounce fixed
+- Variables for bounce impact
+- Variables fo speed bounce low and mid
+
+---
+
 ## [0.1.51] – 2025-07-25
 ### Added
 - Hull UI

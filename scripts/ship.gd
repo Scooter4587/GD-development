@@ -16,6 +16,8 @@ var desired_direction: Vector2 = Vector2.ZERO
 var is_accelerating: bool      = false
 var _collided_last_frame: bool = false
 var _invuln_time: float        = 0.0
+var _time_since_bounce: float = 1e6
+var _bounce_count: int = 0
 
 # --- 🔁 Stav vrtáka ---
 var is_drilling: bool       = false
@@ -26,98 +28,112 @@ func _ready() -> void:
 	drill_tool.connect("drill_ended",   Callable(self, "_on_drill_ended"))
 
 func _physics_process(delta: float) -> void:
-	# invulnerability frames
+	# 0) Update timers for invulnerability, drill-lock, bounce-reset
 	if _invuln_time > 0.0:
 		_invuln_time = max(_invuln_time - delta, 0.0)
-	# drill lock-timer (držanie nízkej rýchlosti po každom tile)
 	if drill_lock_timer > 0.0:
 		drill_lock_timer = max(drill_lock_timer - delta, 0.0)
+	_time_since_bounce += delta
 
-	# vstup
+	# 1) Handle player input
 	handle_input()
 
-	# full stop (C)
+	# 2) Movement or full-stop logic
 	if Input.is_action_pressed("full_stop"):
 		is_accelerating = false
 		var br = cfg.brake_speed if cfg.require_rotation_alignment else cfg.arc_brake_speed
 		velocity = velocity.move_toward(Vector2.ZERO, br * delta)
-		if not cfg.require_rotation_alignment:
-			if input_buffer != Vector2.ZERO:
-				var targ = input_buffer.angle()
-				rotation = lerp_angle(rotation, targ, cfg.arc_rotation_speed * delta)
-		else:
+		if not cfg.require_rotation_alignment and input_buffer != Vector2.ZERO:
+			rotation = lerp_angle(rotation, input_buffer.angle(), cfg.arc_rotation_speed * delta)
+		elif cfg.require_rotation_alignment:
 			handle_rotation(delta)
 	else:
-		# bežný pohyb
 		if not cfg.require_rotation_alignment:
 			_arcade_movement(delta)
 		else:
 			handle_rotation(delta)
 			handle_realistic_movement(delta)
 
-		# drill-speed a full-stop logika
+	# 3) Drill-speed lock logic
 	if Input.is_action_pressed("full_stop"):
-		# Full-stop (C) má vždy prioritu
 		is_accelerating = false
-		var br = cfg.brake_speed if cfg.require_rotation_alignment else cfg.arc_brake_speed
-		velocity = velocity.move_toward(Vector2.ZERO, br * delta)
+		var br2 = cfg.brake_speed if cfg.require_rotation_alignment else cfg.arc_brake_speed
+		velocity = velocity.move_toward(Vector2.ZERO, br2 * delta)
 		if not cfg.require_rotation_alignment and input_buffer != Vector2.ZERO:
-			rotation = lerp_angle(input_buffer.angle(), rotation, cfg.arc_rotation_speed * delta)
+			rotation = lerp_angle(rotation, input_buffer.angle(), cfg.arc_rotation_speed * delta)
 		elif cfg.require_rotation_alignment:
 			handle_rotation(delta)
-
 	elif is_drilling or drill_lock_timer > 0.0:
 		is_accelerating = false
-
-		# Určenie smeru: ak máme nejakú rýchlosť, držíme tento smer,
-		# inak použijeme vstupný smer hráča
-		var dir = Vector2.ZERO
-		if velocity.length() > 0.0:
-			dir = velocity.normalized()
-		else:
-			dir = input_buffer
-
+		var dir = velocity.normalized() if velocity.length() > 0.0 else input_buffer
 		var target_vel = dir * cfg.drill.drill_speed_limit
-		# Použijeme acceleration pre plynulé zrýchlenie aj brzdenie
 		velocity = velocity.move_toward(target_vel, acceleration * delta)
-	
-	# thrust sprite
+
+	# 4) Update thrust sprite
 	update_thrust_sprite()
 
-	# pohyb + kolízie
+	# 5) Save previous velocity for collision responses
+	var prev_vel = velocity
+
+	# 6) Move
 	move_and_slide()
 
-	# 1) klasický slide‐bounce
+	# 7) Slide-bounce
 	var hit = get_slide_collision_count() > 0
 	if hit and not _collided_last_frame and _invuln_time <= 0.0:
-		var speed = velocity.length()
+		var speed = prev_vel.length()
 		if speed >= cfg.hull.damage_threshold and not is_drilling:
 			stats.apply_hull_damage(speed)
 		if not is_drilling:
+			# reset alebo inkrement bounce-count
+			if _time_since_bounce <= cfg.bounce_reset_time:
+				_bounce_count += 1
+			else:
+				_bounce_count = 1
+			_time_since_bounce = 0
+			# vyber base multiplier podľa rýchlosti
+			var base_mult = cfg.bounce_impulse_multiplier_high if speed >= cfg.bounce_speed_threshold else cfg.bounce_impulse_multiplier_low
+			# aplikuj decay pre sekundárne odbitia
+			var final_mult = base_mult * pow(cfg.bounce_decay, _bounce_count - 1)
+			# odraz a nastavenie invuln
 			var normal = get_slide_collision(0).get_normal()
-			velocity = velocity.bounce(normal) * cfg.hull.bounce_impulse_multiplier
+			velocity = prev_vel.bounce(normal) * final_mult
 			_invuln_time = cfg.hull.invulnerability_duration
 	_collided_last_frame = hit
 
-	# 2) axis‐aligned probe bounce
-	#if not hit and input_buffer != Vector2.ZERO and velocity.length() > cfg.hull.damage_threshold and _invuln_time <= 0.0:
-	#	print("[AXIS PROBE] probing… speed=", velocity.length())
-	#	var probe = velocity * delta
-	#	var col = move_and_collide(probe)
-	#	if col:
-	#		print("[AXIS PROBE] collision! normal=", col.get_normal())
-	#		var speed = velocity.length()
-	#		if speed >= cfg.hull.damage_threshold and not is_drilling:
-	##			stats.apply_hull_damage(speed)
-	#		if not is_drilling:
-	#			var normal = col.get_normal()
-	#			velocity = velocity.bounce(normal) * cfg.hull.axis_bounce_impulse_multiplier
-	#			_invuln_time = cfg.hull.invulnerability_duration
-	#		_collided_last_frame = true
+	# 8) Axis-aligned probe bounce (fallback)
+	if not hit \
+	   and input_buffer != Vector2.ZERO \
+	   and prev_vel.length() > cfg.hull.damage_threshold \
+	   and _invuln_time <= 0.0:
 
-	# nakoniec enforce drill‐limit aj po akomkoľvek bounce
-	#if is_drilling or drill_lock_timer > 0.0:
-	#	velocity = velocity.limit_length(cfg.drill.drill_speed_limit)
+		var from = global_position
+		var to = from + prev_vel * delta
+		var space_state = get_world_2d().direct_space_state
+		var query = PhysicsRayQueryParameters2D.new()
+		query.from = from
+		query.to = to
+		query.exclude = [self]
+		query.collision_mask = collision_layer
+		query.collide_with_areas = false
+
+		var col = space_state.intersect_ray(query)
+		if col:
+			var speed = prev_vel.length()
+			if speed >= cfg.hull.damage_threshold:
+				stats.apply_hull_damage(speed)
+			# reset alebo inkrement bounce-count
+			if _time_since_bounce <= cfg.bounce_reset_time:
+				_bounce_count += 1
+			else:
+				_bounce_count = 1
+			_time_since_bounce = 0
+			# vyber multiplikátor podľa rýchlosti
+			var base_mult = cfg.bounce_impulse_multiplier_high if speed >= cfg.bounce_speed_threshold else cfg.bounce_impulse_multiplier_low
+			var final_mult = base_mult * pow(cfg.bounce_decay, _bounce_count - 1)
+			velocity = prev_vel.bounce(col.normal) * final_mult
+			_invuln_time = cfg.hull.invulnerability_duration
+			_collided_last_frame = true
 		
 func handle_input() -> void:
 	input_buffer = Vector2(

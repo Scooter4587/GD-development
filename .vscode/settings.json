@@ -1,3 +1,9 @@
 {
-    "godotTools.editorPath.godot4": "c:\\Users\\Adam Kilík\\Desktop\\Godot_v4.4.1-stable_win64.exe"
+  "godotTools.editorPath.godot4": "c:\\Users\\Adam Kilík\\Desktop\\Godot_v4.4.1-stable_win64.exe",
+  // don’t override indent style in VSCode so .editorconfig má prednosť:
+  "editor.detectIndentation": false,
+  "[gdscript]": {
+    "editor.insertSpaces": false,
+    "editor.tabSize": 1
+  }
 }
