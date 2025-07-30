@@ -18,6 +18,10 @@ func _ready() -> void:
 	connect("body_exited",  Callable(self, "_on_body_exited"))
 
 func _physics_process(_delta: float) -> void:
+	# Guard: ak je loď v shutdown/lock, nevrtej
+	if ship.post_shutdown_lock or ship.cfg.energy.is_shutdown:
+		return
+		
 	if Input.is_action_pressed("drill") and drill_ready:
 		# Guard: začneme len keď sme pod rýchlostným limitom
 		if ship.velocity.length() > cfg_drill.drill_speed_limit:
@@ -45,7 +49,7 @@ func _physics_process(_delta: float) -> void:
 			var qty = counts[res_type]
 			ResourceData.add_resource(res_type, qty)
 			print("[DEBUG] Counted %s ×%d, total now %d"
-				  % [res_type, qty, ResourceData.get_amount(res_type)])
+						% [res_type, qty, ResourceData.get_amount(res_type)])
 
 		# 4) Cooldown pred ďalším vrtaním
 		await get_tree().create_timer(cfg_drill.cooldown_time).timeout

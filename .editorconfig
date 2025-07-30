@@ -6,6 +6,6 @@ end_of_line = lf
 
 [*.gd]
 indent_style = tab
-indent_size = tab
+indent_size = 1
 trim_trailing_whitespace = true
 insert_final_newline = true

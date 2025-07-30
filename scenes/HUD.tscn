@@ -2,11 +2,11 @@
 
 [node name="HUD" type="CanvasLayer"]
 
-[node name="StatsMargin" type="MarginContainer" parent="."]
-offset_left = 387.0
-offset_top = 564.0
-offset_right = 863.0
-offset_bottom = 704.0
+[node name="StatsMargin" type="VBoxContainer" parent="."]
+offset_left = 1.0
+offset_top = 508.0
+offset_right = 477.0
+offset_bottom = 648.0
 
 [node name="SpeedPanel" type="HBoxContainer" parent="StatsMargin"]
 layout_mode = 2
@@ -28,6 +28,7 @@ layout_mode = 2
 
 [node name="HullLabel" type="Label" parent="StatsMargin/StatusContainer/HullContainer"]
 layout_mode = 2
+text = "HULL"
 
 [node name="HullBar" type="ProgressBar" parent="StatsMargin/StatusContainer/HullContainer"]
 layout_mode = 2
@@ -38,8 +39,20 @@ layout_mode = 2
 
 [node name="FuelLabel" type="Label" parent="StatsMargin/StatusContainer/FuelContainer"]
 layout_mode = 2
+text = "FUEL"
 
 [node name="FuelBar" type="ProgressBar" parent="StatsMargin/StatusContainer/FuelContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EnergyContainer" type="HBoxContainer" parent="StatsMargin/StatusContainer"]
+layout_mode = 2
+
+[node name="EnergyLabel" type="Label" parent="StatsMargin/StatusContainer/EnergyContainer"]
+layout_mode = 2
+text = "Energy"
+
+[node name="EnergyBar" type="ProgressBar" parent="StatsMargin/StatusContainer/EnergyContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 

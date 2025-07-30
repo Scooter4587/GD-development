@@ -1,5 +1,15 @@
 # 📜 Changelog – AstroMiner 🚀
 
+## [0.1.54] – 2025-07-30
+### Added
+- Energy system created
+- Energy consumption and production
+- Energy UI bar
+- UI moved to left down corner
+- Shutdown event
+  
+---
+
 ## [0.1.53] – 2025-07-28
 ### Added
 - Fuel system implemented

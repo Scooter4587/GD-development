@@ -9,6 +9,7 @@ extends CharacterBody2D
 signal drill_locked
 signal drill_unlocked
 signal fuel_low
+signal energy_low
 
 # --- 🚀 Interné premenné pohybu ---
 var acceleration: float        = 200.0
@@ -19,6 +20,7 @@ var _collided_last_frame: bool = false
 var _invuln_time: float        = 0.0
 var _time_since_bounce: float  = 1e6
 var _bounce_count: int         = 0
+var post_shutdown_lock: bool = false
 
 # --- 🔋 Fuel systém ---
 var fuel_current: float        = 0.0  # nastavíme v _ready()
@@ -34,7 +36,44 @@ func _ready() -> void:
 	drill_tool.connect("drill_ended",   Callable(self, "_on_drill_ended"))
 
 func _physics_process(delta: float) -> void:
-	# 0) Update timers
+	# 0) DETEKCIA SHUTDOWNU – len ak nie sme v post_shutdown_lock
+	if cfg.energy.energy_current <= 0.0 and not cfg.energy.is_shutdown and not post_shutdown_lock:
+					cfg.energy.is_shutdown    = true
+					cfg.energy.shutdown_timer = cfg.energy.shutdown_duration
+					post_shutdown_lock        = true
+					# zastavíme drill
+					if is_drilling:
+									is_drilling = false
+									_on_drill_ended()
+
+	# 1) AK SME V SHUTDOWNE → drift + kolízie, žiadny regen/spotreba/input
+	if cfg.energy.is_shutdown:
+		cfg.energy.shutdown_timer -= delta
+		if cfg.energy.shutdown_timer <= 0.0:
+			# skončil shutdown, odteraz začneme regenovať
+			cfg.energy.is_shutdown = false
+
+		# drift + kolízie
+		var drift_vel = velocity
+		move_and_slide()
+		_handle_slide_bounce(drift_vel)
+		_handle_axis_bounce(drift_vel, delta)
+		return
+
+	# 2) PO SHUTDOWNE → regenerujeme energiu
+	cfg.energy.regenerate(delta)
+
+	# 3) Uvoľníme drill‐lock, keď sme nabití na ≥ 50%
+	if post_shutdown_lock and cfg.energy.energy_current >= cfg.energy.energy_max * cfg.energy.restart_threshold:
+		post_shutdown_lock = false
+
+	# 4) Spotreba vrtáka (len ak je zapnutý a nie sme v post‐shutdown‐lock)
+	if is_drilling:
+		cfg.energy.consume_drill(delta)
+		if cfg.energy.is_low():
+			emit_signal("energy_low")
+
+	# 5) Pôvodné timer‐updaty pre invulnerability a drill‐lock
 	if _invuln_time > 0.0:
 		_invuln_time = max(_invuln_time - delta, 0.0)
 	if drill_lock_timer > 0.0:
@@ -97,6 +136,12 @@ func _physics_process(delta: float) -> void:
 	_handle_slide_bounce(prev_vel)
 	_handle_axis_bounce(prev_vel, delta)
 
+	# 7) Až teraz skutočný vstup a zrýchlenie, ale iba ak nie shutdown
+	if not cfg.energy.is_shutdown:
+			handle_input()
+			# zrýchlenie, rotácia, drill‐logika atď.
+
+
 # --- Fuel consumption methods ---
 func _consume_main(delta: float) -> void:
 	var cost = cfg.fuel.fuel_main_engine_per_sec * delta
@@ -156,13 +201,20 @@ func _handle_axis_bounce(prev_vel: Vector2, delta: float) -> void:
 		_collided_last_frame = true
 
 func handle_input() -> void:
+	# 1) Pohybový vstup
 	input_buffer = Vector2(
 		Input.get_action_strength("move_right") - Input.get_action_strength("move_left"),
 		Input.get_action_strength("move_down")  - Input.get_action_strength("move_up")
 	).normalized()
+
+	# 2) Toggle movement mode vždy
 	if Input.is_action_just_pressed("toggle_movement_mode"):
 		cfg.require_rotation_alignment = not cfg.require_rotation_alignment
 		print("Režim pohybu:", "Realistický" if cfg.require_rotation_alignment else "Arkádový")
+
+	# 3) Drill toggle – iba ak neprechádzame post-shutdown lock
+	if Input.is_action_just_pressed("drill") and not post_shutdown_lock:
+		is_drilling = not is_drilling
 
 func _arcade_movement(delta: float) -> void:
 	if input_buffer != Vector2.ZERO:
