@@ -3,10 +3,10 @@
 [node name="HUD" type="CanvasLayer"]
 
 [node name="StatsMargin" type="VBoxContainer" parent="."]
-offset_left = 1.0
-offset_top = 508.0
-offset_right = 477.0
-offset_bottom = 648.0
+offset_left = 26.0
+offset_top = 477.0
+offset_right = 502.0
+offset_bottom = 624.0
 
 [node name="SpeedPanel" type="HBoxContainer" parent="StatsMargin"]
 layout_mode = 2
@@ -56,6 +56,17 @@ text = "Energy"
 layout_mode = 2
 size_flags_horizontal = 3
 
+[node name="CargoContainer" type="HBoxContainer" parent="StatsMargin/StatusContainer"]
+layout_mode = 2
+
+[node name="CargoLabel" type="Label" parent="StatsMargin/StatusContainer/CargoContainer"]
+layout_mode = 2
+text = "Cargo"
+
+[node name="CargoBar" type="ProgressBar" parent="StatsMargin/StatusContainer/CargoContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
 [node name="ResourceMargin" type="MarginContainer" parent="."]
 offset_left = 30.0
 offset_top = 33.0
@@ -69,6 +80,7 @@ layout_mode = 2
 layout_mode = 2
 
 [node name="Label" type="Label" parent="ResourceMargin/ResourcePanel/CrystalRow"]
+visible = false
 layout_mode = 2
 text = "Crystal:"
 
@@ -80,6 +92,7 @@ text = "Crystal: 0"
 layout_mode = 2
 
 [node name="Label" type="Label" parent="ResourceMargin/ResourcePanel/FuelRow"]
+visible = false
 layout_mode = 2
 text = "Fuel:"
 
@@ -91,6 +104,7 @@ text = "Fuel: 0"
 layout_mode = 2
 
 [node name="Label" type="Label" parent="ResourceMargin/ResourcePanel/TitaniumRow"]
+visible = false
 layout_mode = 2
 text = "Titanium:"
 

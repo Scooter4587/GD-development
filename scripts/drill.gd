@@ -3,9 +3,9 @@ extends Area2D
 signal drill_started
 signal drill_ended
 
-@onready var ship: CharacterBody2D       = get_parent()
-@onready var cfg_drill: DrillConfig      = ShipConfig.drill
-@onready var drill_layers: Array[TileMapLayer] = [
+@onready var ship: CharacterBody2D              = get_parent()
+@onready var cfg_drill: DrillConfig             = ShipConfig.drill
+@onready var drill_layers: Array[TileMapLayer]  = [
 	get_node("/root/Main/Asteroid1/Asteroid"),
 	get_node("/root/Main/ResourcesManager/ResourceLayer"),
 ]
@@ -21,7 +21,7 @@ func _physics_process(_delta: float) -> void:
 	# Guard: ak je loď v shutdown/lock, nevrtej
 	if ship.post_shutdown_lock or ship.cfg.energy.is_shutdown:
 		return
-		
+
 	if Input.is_action_pressed("drill") and drill_ready:
 		# Guard: začneme len keď sme pod rýchlostným limitom
 		if ship.velocity.length() > cfg_drill.drill_speed_limit:
@@ -47,9 +47,13 @@ func _physics_process(_delta: float) -> void:
 		# 3) Pripočítame suroviny (+1 za každý tile)
 		for res_type in counts.keys():
 			var qty = counts[res_type]
-			ResourceData.add_resource(res_type, qty)
-			print("[DEBUG] Counted %s ×%d, total now %d"
-						% [res_type, qty, ResourceData.get_amount(res_type)])
+			# pridáme do CargoHold
+			ResourceData.mine_resource_by_name(res_type, ship.cargo_hold, qty)
+			# debug výpis
+			print("[DEBUG] Počet %s: %d  |  Cargo váha: %f"
+				% [res_type,
+				   ResourceData.get_amount(res_type),
+				   ship.cargo_hold.get_current_weight() ])
 
 		# 4) Cooldown pred ďalším vrtaním
 		await get_tree().create_timer(cfg_drill.cooldown_time).timeout

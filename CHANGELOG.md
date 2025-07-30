@@ -1,5 +1,12 @@
 # 📜 Changelog – AstroMiner 🚀
 
+## [0.1.55] – 2025-07-30
+### Added
+- Cargo logic _mine_items weight
+- Cargo ui progress bar
+- Cargo affect fuel consumption
+- cargo weight damage multiplier on impacts1
+
 ## [0.1.54] – 2025-07-30
 ### Added
 - Energy system created
